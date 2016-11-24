@@ -4,8 +4,28 @@ namespace Keizer\KoningRequestHandler\Service;
 use Keizer\KoningRequestHandler\Domain\Model\Request;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
+/**
+ * Service: Requests
+ *
+ * @package Keizer\KoningRequestHandler\Service
+ */
 class RequestService
 {
+
+    /**
+     * @var CacheService
+     */
+    protected $cacheService;
+
+    /**
+     * RequestService constructor.
+     *
+     * @param string $cacheInterface
+     */
+    public function __construct($cacheInterface = null)
+    {
+        $this->setCacheService($cacheInterface);
+    }
 
     /**
      * Get data for request
@@ -58,26 +78,26 @@ class RequestService
      */
     public function download($request)
     {
-        $report = array();
+        $report = [];
         $url = $request->getUrl();
         $results = GeneralUtility::getUrl($url, 0, false, $report);
 
         // log error when retrieval gives error
         if ($report['http_code'] !== 200) {
-            $log = array(
+            $log = [
                 'url' => $url,
                 'output' => $results,
-            );
+            ];
 
             GeneralUtility::sysLog(json_encode($log), 'koning_request_handler', GeneralUtility::SYSLOG_SEVERITY_WARNING);
         }
 
         if ($report['http_code'] > 0 && $report['http_code'] !== 500) {
             if ($results !== null) {
-                $tags = array(
+                $tags = [
                     'koning_request_handler',
-                    'pageId_' . (int) $GLOBALS['TSFE']->id,
-                );
+                    'pageId_' . (int)$GLOBALS['TSFE']->id,
+                ];
 
                 // Generate tags based on url
                 $info = parse_url($url);
@@ -101,7 +121,6 @@ class RequestService
             $this->getCacheService()->dequeue($request);
         } else {
             $results = false;
-            // Queue update
             $this->getCacheService()->enqueue($request);
         }
 
@@ -117,11 +136,20 @@ class RequestService
     }
 
     /**
+     * @param string $interface
+     * @return void
+     */
+    protected function setCacheService($interface = null)
+    {
+        $this->cacheService = $this->getObjectManager()->get(CacheService::class, $interface);
+    }
+
+    /**
      * @return CacheService
      */
     protected function getCacheService()
     {
-        return GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\ObjectManager::class);
+        return $this->cacheService;
     }
 
 }

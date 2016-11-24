@@ -2,7 +2,7 @@
 namespace Keizer\KoningRequestHandler\Domain\Model;
 
 /**
- * Cache: Request
+ * Model: Request
  *
  * @package Keizer\KoningRequestHandler\Domain\Model
  */
@@ -98,7 +98,7 @@ class Request extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
      */
     public function useCache()
     {
-        return ($this->getNoCache() === false);
+        return ($this->isNoCache() === false);
     }
 
     /**
@@ -116,7 +116,7 @@ class Request extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
      *
      * @return boolean
      */
-    public function getNoCache()
+    public function isNoCache()
     {
         return $this->noCache;
     }

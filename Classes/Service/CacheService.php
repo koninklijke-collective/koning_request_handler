@@ -1,48 +1,84 @@
 <?php
 namespace Keizer\KoningRequestHandler\Service;
 
+use Keizer\KoningRequestHandler\Domain\Model\Request;
+use Keizer\KoningRequestHandler\Domain\Repository\RequestRepository;
+use TYPO3\CMS\Core\Cache\CacheManager;
+use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
+
+/**
+ * Service: Caches
+ *
+ * @package Keizer\KoningRequestHandler\Service
+ */
 class CacheService
 {
 
-    const CACHE_INTERFACE = 'koningrequesthandler_requests';
+    /**
+     * Defined caching interface used in your trait
+     */
+    const DEFAULT_CACHE_INTERFACE = 'koningrequesthandler_requests';
 
     /**
-     * @var \TYPO3\CMS\Extbase\Object\ObjectManager
+     * @var ObjectManager
      */
     protected $objectManager;
 
     /**
-     * @var \TYPO3\CMS\Core\Cache\Frontend\FrontendInterface
+     * @var FrontendInterface
      */
     protected $cacheInstance;
 
     /**
-     * @param \Keizer\KoningRequestHandler\Domain\Model\Request $request
-     * @return string
+     * RequestService constructor.
+     *
+     * @param string $cacheInterface
+     */
+    public function __construct($cacheInterface = null)
+    {
+        $this->setCacheInstance($cacheInterface);
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
      */
     public function get($request)
     {
+        return $this->getCacheInstance()->get($request->getIdentifier());
     }
 
     /**
-     * @param \Keizer\KoningRequestHandler\Domain\Model\Request $request
-     * @param string $results
+     * @param Request $request
+     * @param mixed $data The data to cache - also depends on the concrete cache implementation
+     * @param array $tags Tags to associate with this cache entry
+     * @param integer $lifetime Lifetime of this cache entry in seconds. If NULL is specified, the default lifetime is used. "0" means unlimited lifetime.
      * @return void
      */
-    public function set($request, $results, $tags)
+    public function set($request, $data, $tags = [], $lifetime = null)
     {
+        $this->getCacheInstance()->set(
+            $request->getIdentifier(),
+            $data,
+            $tags,
+            $lifetime
+        );
     }
 
     /**
-     * @param \Keizer\KoningRequestHandler\Domain\Model\Request $request
+     * @param Request $request
      * @return boolean
      */
     public function has($request)
     {
+        return $this->getCacheInstance()->has($request->getIdentifier());
     }
 
     /**
-     * @param \Keizer\KoningRequestHandler\Domain\Model\Request $request
+     * @param Request $request
      * @return boolean
      */
     public function queued($request)
@@ -51,7 +87,7 @@ class CacheService
     }
 
     /**
-     * @param \Keizer\KoningRequestHandler\Domain\Model\Request $request
+     * @param Request $request
      * @return void
      */
     public function enqueue($request)
@@ -60,8 +96,8 @@ class CacheService
     }
 
     /**
-     * @param \Keizer\KoningRequestHandler\Domain\Model\Request $request
-     * @return boolean
+     * @param Request $request
+     * @return void
      */
     public function dequeue($request)
     {
@@ -69,32 +105,37 @@ class CacheService
     }
 
     /**
-     * @return \TYPO3\CMS\Extbase\Object\ObjectManagerInterface
+     * @return ObjectManagerInterface
      */
     protected function getObjectManager()
     {
         if ($this->objectManager === null) {
-            $this->objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
+            $this->objectManager = GeneralUtility::makeInstance(ObjectManager::class);
         }
         return $this->objectManager;
     }
 
     /**
-     * @return \TYPO3\CMS\Core\Cache\Frontend\FrontendInterface
+     * @param string $interface
      */
-    protected function getCacheInterface()
+    protected function setCacheInstance($interface = null)
     {
-        if ($this->cacheInstance === null) {
-            $this->cacheInstance = $this->getObjectManager()->get(\TYPO3\CMS\Core\Cache\CacheManager::class)->getCache(static::CACHE_INTERFACE);
-        }
+        $this->cacheInstance = $this->getObjectManager()->get(CacheManager::class)->getCache($interface ?: static::DEFAULT_CACHE_INTERFACE);
+    }
+
+    /**
+     * @return FrontendInterface
+     */
+    protected function getCacheInstance()
+    {
         return $this->cacheInstance;
     }
 
     /**
-     * @return \Keizer\KoningRequestHandler\Domain\Repository\RequestRepository
+     * @return RequestRepository
      */
     protected function getRequestRepository()
     {
-        return $this->getObjectManager()->get(\Keizer\KoningRequestHandler\Domain\Repository\RequestRepository::class);
+        return $this->getObjectManager()->get(RequestRepository::class);
     }
 }

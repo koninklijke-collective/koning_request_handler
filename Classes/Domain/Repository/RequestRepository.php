@@ -36,7 +36,7 @@ class RequestRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
         $this->getDatabaseConnection()->exec_UPDATEquery(
             Request::TABLE,
             'running = ""',
-            array('running' => $uniqueId)
+            ['running' => $uniqueId]
         );
     }
 
@@ -52,7 +52,7 @@ class RequestRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
         $this->getDatabaseConnection()->exec_UPDATEquery(
             Request::TABLE,
             'running = "' . $uniqueId . '"',
-            array('running' => '')
+            ['running' => '']
         );
     }
 
@@ -62,7 +62,7 @@ class RequestRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
      */
     public function existsByIdentifier($identifier)
     {
-        return (bool) $this->getDatabaseConnection()->exec_SELECTcountRows(
+        return (bool)$this->getDatabaseConnection()->exec_SELECTcountRows(
             'uid',
             Request::TABLE,
             'identifier = "' . $identifier . '"'
@@ -95,4 +95,5 @@ class RequestRepository extends \TYPO3\CMS\Extbase\Persistence\Repository
     {
         return $GLOBALS['TYPO3_DB'];
     }
+
 }

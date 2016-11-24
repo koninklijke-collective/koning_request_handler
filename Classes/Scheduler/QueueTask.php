@@ -44,7 +44,6 @@ class QueueTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask
                         $this->getRequestRepository()->remove($request);
                     }
                 }
-
             }
             $this->getRequestRepository()->unlockAll($runnerUniqueId);
             $success = true;
@@ -83,7 +82,7 @@ class QueueTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask
                 $multiple = $exec->getMultiple();
                 $cronCmd = $exec->getCronCmd();
 
-                $variables = array(
+                $variables = [
                     'uid' => $this->taskUid,
                     'sitename' => $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'],
                     'site' => $site,
@@ -95,7 +94,7 @@ class QueueTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask
                     'interval' => $interval,
                     'multiple' => ($multiple ? 'yes' : 'no'),
                     'cronCmd' => ($cronCmd ? $cronCmd : 'not used'),
-                );
+                ];
             }
 
             \TYPO3\CMS\Core\Utility\GeneralUtility::devLog(
